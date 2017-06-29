@@ -1,0 +1,7 @@
+scipy
+numpy
+cython
+lxml
+ujson
+git+https://github.com/openai/gym
+h5py
