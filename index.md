@@ -25,7 +25,7 @@
 
 ## Решение
 В качестве решения мы ожидаем кривую сходимости обучения. Например, для нейронных сетей это будет график Loss функции. Так как задача достаточно сложная, мы не требуем от вас определенных занчений метрики обучения на тестовой выборке - достаточно показать, что ваша модель способна обучаться.
-## Базовое рещение
+## Базовое решение
 [Базовое решение](https://github.com/cog-isa/isyt2017rl/tree/master/baseline) написано на Python 2 и требует установки некоторых библиотек, указанных в файле [_requirements.txt_](https://github.com/cog-isa/isyt2017rl/blob/master/baseline/requirements.txt). 
 Скрипт запуска - [_run_agent.py_](https://github.com/cog-isa/isyt2017rl/blob/master/baseline/run_agent.py). Некоторые участки кода оптимизированы с помощью CPython, поэтому перед запуском базового решения нужно скомпилировать _pyx_ файлы с помощью срипта [build_cython.sh](https://github.com/cog-isa/isyt2017rl/blob/master/baseline/build_cython.sh).
 
