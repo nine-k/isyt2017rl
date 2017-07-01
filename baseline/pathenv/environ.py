@@ -37,6 +37,7 @@ class PathFindingByPixelWithDistanceMapEnv(object):
         self.task_set = TaskSet(tasks_dir, maps_dir)
         self.task_ids = list(self.task_set.keys())
         self.cur_task_i = 0
+        self.vision_range = vision_range
 
         self.observation_space = gym.spaces.Box(low=0,
                                                 high=1,
@@ -48,7 +49,7 @@ class PathFindingByPixelWithDistanceMapEnv(object):
 
         self.greedy_distance_reward_weight = greedy_distance_reward_weight
         self.absolute_distance_reward_weight = absolute_distance_reward_weight
-        self.vision_range = vision_range
+
         self.target_on_border_reward = target_on_border_reward
         self.absolute_distance_observation_weight = absolute_distance_observation_weight
 
