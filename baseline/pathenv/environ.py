@@ -1,5 +1,6 @@
 import gym
 import numpy
+import gym.spaces
 from scipy.spatial.distance import euclidean
 import random
 from .utils_compiled import build_distance_map, get_flat_state, check_finish_achievable
@@ -7,7 +8,7 @@ from .utils_compiled import build_distance_map, get_flat_state, check_finish_ach
 from .tasks import BY_PIXEL_ACTIONS, BY_PIXEL_ACTION_DIFFS, TaskSet
 
 
-class PathFindingByPixelWithDistanceMapEnv(object):
+class PathFindingByPixelWithDistanceMapEnv(gym.Env):
     def __init__(self):
         self.task_set = None
         self.cur_task = None

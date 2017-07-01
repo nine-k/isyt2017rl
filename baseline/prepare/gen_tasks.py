@@ -10,13 +10,7 @@ import random
 import numpy
 from scipy.spatial.distance import euclidean
 
-from pathenv.tasks import BY_PIXEL_ACTION_DIFFS
-
-PathFindingTask = collections.namedtuple('PathFindingTask',
-                                         'title local_map start finish path'.split(' '))
-
-CompactPathFindingTask = collections.namedtuple('CompactPathFindingTask',
-                                                'map_id start finish path'.split(' '))
+from pathenv.tasks import BY_PIXEL_ACTION_DIFFS, CompactPathFindingTask, PathFindingTask
 
 StepResult = collections.namedtuple('StepResult',
                                     'must_continue best_next new_variants_with_ratings'.split(' '))

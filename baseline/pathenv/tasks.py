@@ -30,6 +30,9 @@ COMPACT_TASK_EXT = '.pickle'
 PathFindingTask = collections.namedtuple('PathFindingTask',
                                          'title local_map start finish path'.split(' '))
 
+CompactPathFindingTask = collections.namedtuple('CompactPathFindingTask',
+                                                'map_id start finish path'.split(' '))
+
 
 class TaskSet(object):
     def __init__(self, paths_dir, maps_dir):

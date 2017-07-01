@@ -7,13 +7,9 @@ import hashlib
 import os
 
 import lxml
+import lxml.etree
 import numpy
-
-PathFindingTask = collections.namedtuple('PathFindingTask',
-                                         'title local_map start finish path'.split(' '))
-
-CompactPathFindingTask = collections.namedtuple('CompactPathFindingTask',
-                                                'map_id start finish path'.split(' '))
+from pathenv.tasks import PathFindingTask, CompactPathFindingTask
 
 
 def load_from_xml(fname, ctor=PathFindingTask):
