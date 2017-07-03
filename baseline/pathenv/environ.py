@@ -31,7 +31,7 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
                    done_reward=10,
                    greedy_distance_reward_weight=0.1,
                    absolute_distance_reward_weight=0.1,
-                   vision_range=10,
+                   vision_range=20,
                    target_on_border_reward=5,
                    absolute_distance_observation_weight=0.1):
 
@@ -69,7 +69,8 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
             while True:
                 self.start = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
                               rand.randint(0, self.cur_task.local_map.shape[1] - 1))
-                self.finish = self.start
+                self.finish = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
+                               rand.randint(0, self.cur_task.local_map.shape[1] - 1))
                 if local_map[self.start] == 0 \
                         and local_map[self.finish] == 0 \
                         and self.start != self.finish \
@@ -138,7 +139,7 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
                 self.cur_position_discrete = self.cur_position_discrete + BY_PIXEL_ACTION_DIFFS[action]
 
         observation = self._get_state()
-        return observation, reward, done
+        return observation, reward, done, None
 
     def _get_usual_reward(self, old_position, new_position):
         old_height = self.distance_map[tuple(old_position)]

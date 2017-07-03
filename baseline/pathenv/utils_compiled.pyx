@@ -71,13 +71,14 @@ def line_intersection(tuple line1, tuple line2):
     def det(tuple a, tuple b):
         return a[0] * b[1] - a[1] * b[0]
 
-    cdef float div = det(xdiff, ydiff)
+    div = det(xdiff, ydiff)
     if div == 0:
         return None
 
     d = (det(*line1), det(*line2))
     y = det(d, ydiff) / div
     x = det(d, xdiff) / div
+
     return x, y
 
 
@@ -133,6 +134,7 @@ def get_flat_state(np.ndarray[np.uint8_t, ndim = 2] local_map,
         inter_point = None
         for border_i, border in enumerate(borders):
             cur_inter_point = line_intersection(line_to_goal, border)
+
             if cur_inter_point is None:
                 continue
             cur_dist = euclidean(cur_inter_point, goal)

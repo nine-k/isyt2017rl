@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
         for step_i in range(max_steps):
             action = agent.act(observation)
-            next_observation, reward, done = env.step(action)
+            next_observation, reward, done, _ = env.step(action)
             agent.update_memory(observation, action, reward, next_observation, done)
             observation = next_observation
             if done:
