@@ -93,7 +93,7 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
         if (self.VISUALIZE):
             print(self.cur_task.local_map)
             self.map_squares = [[0] * self.cur_task.local_map.shape[1] for _ in range(self.cur_task.local_map.shape[0])]
-            self.map_window.clear(sf_graph.Color.BLUE)
+            self.map_window.clear(sf_graph.Color.WHITE)
             self.map_window.display()
             for row in range(self.cur_task.local_map.shape[0]):
                 for col in range(self.cur_task.local_map.shape[1]):
@@ -106,7 +106,6 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
                     self.map_squares[row][col].position = (col * 20, row * 20)
                     self.map_window.draw(self.map_squares[row][col])
             self.map_squares[self.start[0]][self.start[1]].fill_color = sf_graph.Color.GREEN
-            self.map_squares[0][0].fill_color = sf_graph.Color.GREEN
             self.map_squares[self.finish[0]][self.finish[1]].fill_color = sf_graph.Color.BLUE
             self.map_window.draw(self.map_squares[self.start[0]][self.start[1]])
             self.map_window.draw(self.map_squares[self.finish[0]][self.finish[1]])
@@ -171,6 +170,29 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
                 else:
                     reward = self._get_usual_reward(self.cur_position_discrete, new_position)
                 self.cur_position_discrete = self.cur_position_discrete + BY_PIXEL_ACTION_DIFFS[action]
+
+        if (self.VISUALIZE):
+            print(self.cur_task.local_map)
+            self.map_squares = [[0] * self.cur_task.local_map.shape[1] for _ in range(self.cur_task.local_map.shape[0])]
+            self.map_window.display()
+            for row in range(self.cur_task.local_map.shape[0]):
+                for col in range(self.cur_task.local_map.shape[1]):
+                    self.map_squares[row][col] = sf_graph.RectangleShape((20, 20))
+                    self.map_squares[row][col].outline_color = sf.Color.BLACK
+                    self.map_squares[row][col].outline_thickness = 1
+                    # self.map_squares[row][col].size = sf_sys.Vector2(20, 20)
+                    if (self.cur_task.local_map[row][col]):
+                        self.map_squares[row][col].fill_color = sf_graph.Color.RED
+                    self.map_squares[row][col].position = (col * 20, row * 20)
+                    self.map_window.draw(self.map_squares[row][col])
+            self.map_squares[self.start[0]][self.start[1]].fill_color = sf_graph.Color.GREEN
+            self.map_squares[self.finish[0]][self.finish[1]].fill_color = sf_graph.Color.BLUE
+            self.map_squares[self.cur_position_discrete[0]][self.cur_position_discrete[1]].fill_color = sf_graph.Color.BLACK
+            self.map_window.draw(self.map_squares[self.start[0]][self.start[1]])
+            self.map_window.draw(self.map_squares[self.cur_position_discrete[0]][self.cur_position_discrete[1]])
+            self.map_window.draw(self.map_squares[self.finish[0]][self.finish[1]])
+            self.map_window.display()
+
         observation = self._get_state()
         return observation, reward, done, None
 
