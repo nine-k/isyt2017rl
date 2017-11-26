@@ -172,7 +172,6 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
                 self.cur_position_discrete = self.cur_position_discrete + BY_PIXEL_ACTION_DIFFS[action]
 
         if (self.VISUALIZE):
-            print(self.cur_task.local_map)
             self.map_squares = [[0] * self.cur_task.local_map.shape[1] for _ in range(self.cur_task.local_map.shape[0])]
             self.map_window.display()
             for row in range(self.cur_task.local_map.shape[0]):
