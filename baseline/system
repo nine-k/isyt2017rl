@@ -1,0 +1,16 @@
+Help on package sfml:
+
+NNAAMMEE
+    sfml
+
+FFIILLEE
+    /usr/lib/python2.7/dist-packages/sfml/__init__.py
+
+PPAACCKKAAGGEE  CCOONNTTEENNTTSS
+    audio
+    graphics
+    network
+    sf
+    system
+    window
+

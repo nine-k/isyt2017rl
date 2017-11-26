@@ -7,9 +7,16 @@ from .utils_compiled import build_distance_map, get_flat_state, check_finish_ach
 
 from .tasks import BY_PIXEL_ACTIONS, BY_PIXEL_ACTION_DIFFS, TaskSet
 
+from sfml import sf
+import sfml.graphics as sf_graph
+import sfml.system as sf_sys
+
+WINDOW_W = 400
+WINDOW_H = 400
 
 class PathFindingByPixelWithDistanceMapEnv(gym.Env):
-    def __init__(self):
+    def __init__(self): #initialize
+        self.VISUALIZE = True
         self.task_set = None
         self.cur_task = None
         self.observation_space = None
@@ -23,15 +30,18 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
         self.cur_position_discrete = None
         self.goal_error = None
 
+        self.map_squares = None
+        self.map_window = None
+
     def _configure(self,
-                   tasks_dir='data/imported/paths',
-                   maps_dir='data/imported/maps',
-                   obstacle_punishment=1,
+                   tasks_dir='data/imported/paths', #task directory
+                   maps_dir='data/imported/maps', #maps directory
+                   obstacle_punishment=1, #deafult reward and punishment values
                    local_goal_reward=5,
                    done_reward=10,
                    greedy_distance_reward_weight=0.1,
                    absolute_distance_reward_weight=0.1,
-                   vision_range=20,
+                   vision_range=20, #default vision range
                    target_on_border_reward=5,
                    absolute_distance_observation_weight=0.1):
 
@@ -54,18 +64,20 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
         self.target_on_border_reward = target_on_border_reward
         self.absolute_distance_observation_weight = absolute_distance_observation_weight
 
+        self.map_window = sf.RenderWindow(sf.VideoMode(WINDOW_W, WINDOW_H), "MAP")
+
     def __repr__(self):
         return self.__class__.__name__
 
     def _reset(self):
-        self.cur_task = self.task_set[self.task_ids[self.cur_task_i]]
+        self.cur_task = self.task_set[self.task_ids[self.cur_task_i]] #set next task
         self.cur_task_i += 1
         if self.cur_task_i >= len(self.task_ids):
             self.cur_task_i = 0
 
         rand = random.Random()
         if self.cur_task is not None:
-            local_map = self.cur_task.local_map  # shortcut
+            local_map = self.cur_task.local_map  #choose start and finish point
             while True:
                 self.start = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
                               rand.randint(0, self.cur_task.local_map.shape[1] - 1))
@@ -78,7 +90,27 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
                                                     numpy.array(self.start, dtype=numpy.int),
                                                     numpy.array(self.finish, dtype=numpy.int)):
                     break
-
+        if (self.VISUALIZE):
+            print(self.cur_task.local_map)
+            self.map_squares = [[0] * self.cur_task.local_map.shape[1] for _ in range(self.cur_task.local_map.shape[0])]
+            self.map_window.clear(sf_graph.Color.BLUE)
+            self.map_window.display()
+            for row in range(self.cur_task.local_map.shape[0]):
+                for col in range(self.cur_task.local_map.shape[1]):
+                    self.map_squares[row][col] = sf_graph.RectangleShape((20, 20))
+                    self.map_squares[row][col].outline_color = sf.Color.BLACK
+                    self.map_squares[row][col].outline_thickness = 1
+                    # self.map_squares[row][col].size = sf_sys.Vector2(20, 20)
+                    if (self.cur_task.local_map[row][col]):
+                        self.map_squares[row][col].fill_color = sf_graph.Color.RED
+                    self.map_squares[row][col].position = (col * 20, row * 20)
+                    self.map_window.draw(self.map_squares[row][col])
+            self.map_squares[self.start[0]][self.start[1]].fill_color = sf_graph.Color.GREEN
+            self.map_squares[0][0].fill_color = sf_graph.Color.GREEN
+            self.map_squares[self.finish[0]][self.finish[1]].fill_color = sf_graph.Color.BLUE
+            self.map_window.draw(self.map_squares[self.start[0]][self.start[1]])
+            self.map_window.draw(self.map_squares[self.finish[0]][self.finish[1]])
+            self.map_window.display()
         return self._init_state()
 
     def _init_state(self):
@@ -119,6 +151,8 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
 
     def _step(self, action):
         new_position = self.cur_position_discrete + BY_PIXEL_ACTION_DIFFS[action]
+        # print(action)
+        # print(new_position)
 
         done = numpy.allclose(new_position, self.finish)
         if done:
@@ -137,7 +171,6 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
                 else:
                     reward = self._get_usual_reward(self.cur_position_discrete, new_position)
                 self.cur_position_discrete = self.cur_position_discrete + BY_PIXEL_ACTION_DIFFS[action]
-
         observation = self._get_state()
         return observation, reward, done, None
 

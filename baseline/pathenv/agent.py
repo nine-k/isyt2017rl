@@ -34,10 +34,10 @@ class BaseAgent(object):
 
     def act(self, observation):
         action = numpy.random.choice(self.number_of_actions)
-
         return action
 
     def train_on_memory(self):
+        # print("TRAINING HARD")
         pass
 
     def update_memory(self, observation, action, reward, next_observation, done):
