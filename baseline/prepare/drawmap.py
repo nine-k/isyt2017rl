@@ -16,6 +16,15 @@ WINDOW_W = 400
 WINDOW_H = 400
 MAP_SIZE = 20
 
+aparser = argparse.ArgumentParser()
+aparser.add_argument('-d',
+                     type=str,
+                     default="",
+                     help='Where to put maps')
+
+args = aparser.parse_args()
+
+map_dir = os.path.dirname(args.d)
 
 map_window = sf.RenderWindow(sf.VideoMode(WINDOW_W, WINDOW_H), "MAP")
 map_squares = [[0] * MAP_SIZE for _ in range(MAP_SIZE)]
@@ -55,6 +64,6 @@ print(cur_map)
 print("Save y/N?")
 if (raw_input() == 'y'):
     map_id = hashlib.md5(cur_map.tostring()).hexdigest()
-    map_fname = os.path.join(map_id)
+    map_fname = os.path.join(maps_dir, map_id)
     if not os.path.exists(map_fname + '.npz'):
         np.savez_compressed(map_fname, cur_map)
