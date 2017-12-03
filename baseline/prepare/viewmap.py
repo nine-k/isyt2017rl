@@ -40,4 +40,4 @@ map_window.display()
 while map_window.is_open:
     for event in map_window.events:
         if type(event) is sf.CloseEvent:
-            window.close()
+            map_window.close()

@@ -64,6 +64,6 @@ print(cur_map)
 print("Save y/N?")
 if (raw_input() == 'y'):
     map_id = hashlib.md5(cur_map.tostring()).hexdigest()
-    map_fname = os.path.join(maps_dir, map_id)
+    map_fname = os.path.join(map_dir, map_id)
     if not os.path.exists(map_fname + '.npz'):
         np.savez_compressed(map_fname, cur_map)
