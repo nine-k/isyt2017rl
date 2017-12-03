@@ -43,8 +43,9 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
                    absolute_distance_reward_weight=0.1,
                    vision_range=20, #default vision range
                    target_on_border_reward=5,
-                   absolute_distance_observation_weight=0.1):
-
+                   absolute_distance_observation_weight=0.1,
+                   visualize=False):
+        self.VISUALIZE = visualize
         self.task_set = TaskSet(tasks_dir, maps_dir)
         self.task_ids = list(self.task_set.keys())
         self.cur_task_i = 0

@@ -8,7 +8,7 @@ max_steps = 200
 
 if __name__ == '__main__':
     env = gym.make('PathFindingByPixelWithDistanceMapEnv-v1')
-    env._configure()
+    env._configure(visualize=True)
 
     agent = BaseAgent(input_shape=env.observation_space.shape, number_of_actions=env.action_space.n)
 
