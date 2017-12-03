@@ -75,24 +75,25 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
         self.cur_task_i += 1
         if self.cur_task_i >= len(self.task_ids):
             self.cur_task_i = 0
+        self.start = self.cur_task.start
+        self.finish = self.cur_task.finish
 
-        rand = random.Random()
-        if self.cur_task is not None:
-            local_map = self.cur_task.local_map  #choose start and finish point
-            while True:
-                self.start = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
-                              rand.randint(0, self.cur_task.local_map.shape[1] - 1))
-                self.finish = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
-                               rand.randint(0, self.cur_task.local_map.shape[1] - 1))
-                if local_map[self.start] == 0 \
-                        and local_map[self.finish] == 0 \
-                        and self.start != self.finish \
-                        and check_finish_achievable(numpy.array(local_map, dtype=numpy.float),
-                                                    numpy.array(self.start, dtype=numpy.int),
-                                                    numpy.array(self.finish, dtype=numpy.int)):
-                    break
+        # rand = random.Random()
+        # if self.cur_task is not None:
+        #     local_map = self.cur_task.local_map  #choose start and finish point
+        #     while True:
+        #         self.start = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
+        #                       rand.randint(0, self.cur_task.local_map.shape[1] - 1))
+        #         self.finish = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
+        #                        rand.randint(0, self.cur_task.local_map.shape[1] - 1))
+        #         if local_map[self.start] == 0 \
+        #                 and local_map[self.finish] == 0 \
+        #                 and self.start != self.finish \
+        #                 and check_finish_achievable(numpy.array(local_map, dtype=numpy.float),
+        #                                             numpy.array(self.start, dtype=numpy.int),
+        #                                             numpy.array(self.finish, dtype=numpy.int)):
+        #             break
         if (self.VISUALIZE):
-            print(self.cur_task.local_map)
             self.map_squares = [[0] * self.cur_task.local_map.shape[1] for _ in range(self.cur_task.local_map.shape[0])]
             self.map_window.clear(sf_graph.Color.WHITE)
             self.map_window.display()
@@ -111,6 +112,7 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
             self.map_window.draw(self.map_squares[self.start[0]][self.start[1]])
             self.map_window.draw(self.map_squares[self.finish[0]][self.finish[1]])
             self.map_window.display()
+            #print(self.distance_map)
         return self._init_state()
 
     def _init_state(self):
