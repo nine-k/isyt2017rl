@@ -23,6 +23,7 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
         self.obstacle_punishment = None
         self.local_goal_reward = None
         self.done_reward = None
+        self.step_punishment = None
 
         self.distance_map = None
 
@@ -36,14 +37,15 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
     def _configure(self,
                    tasks_dir='data/imported/paths', #task directory
                    maps_dir='data/imported/maps', #maps directory
-                   obstacle_punishment=1, #deafult reward and punishment values
+                   obstacle_punishment=5, #deafult reward and punishment values
                    local_goal_reward=5,
                    done_reward=10,
-                   greedy_distance_reward_weight=0.1,
+                   greedy_distance_reward_weight=0.05,
                    absolute_distance_reward_weight=0.1,
-                   vision_range=20, #default vision range
+                   vision_range=5, #20, #default vision range
                    target_on_border_reward=5,
                    absolute_distance_observation_weight=0.1,
+                   step_punishment = 1.5,
                    visualize=False):
         self.VISUALIZE = visualize
         self.task_set = TaskSet(tasks_dir, maps_dir)
@@ -58,14 +60,15 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
         self.obstacle_punishment = abs(obstacle_punishment)
         self.local_goal_reward = local_goal_reward
         self.done_reward = done_reward
+        self.step_punishment = step_punishment
 
         self.greedy_distance_reward_weight = greedy_distance_reward_weight
         self.absolute_distance_reward_weight = absolute_distance_reward_weight
 
         self.target_on_border_reward = target_on_border_reward
         self.absolute_distance_observation_weight = absolute_distance_observation_weight
-
-        self.map_window = sf.RenderWindow(sf.VideoMode(WINDOW_W, WINDOW_H), "MAP")
+        if (self.VISUALIZE):
+            self.map_window = sf.RenderWindow(sf.VideoMode(WINDOW_W, WINDOW_H), "MAP")
 
     def __repr__(self):
         return self.__class__.__name__
@@ -75,24 +78,24 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
         self.cur_task_i += 1
         if self.cur_task_i >= len(self.task_ids):
             self.cur_task_i = 0
-        self.start = self.cur_task.start
-        self.finish = self.cur_task.finish
+        # self.start = self.cur_task.start
+        # self.finish = self.cur_task.finish
 
-        # rand = random.Random()
-        # if self.cur_task is not None:
-        #     local_map = self.cur_task.local_map  #choose start and finish point
-        #     while True:
-        #         self.start = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
-        #                       rand.randint(0, self.cur_task.local_map.shape[1] - 1))
-        #         self.finish = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
-        #                        rand.randint(0, self.cur_task.local_map.shape[1] - 1))
-        #         if local_map[self.start] == 0 \
-        #                 and local_map[self.finish] == 0 \
-        #                 and self.start != self.finish \
-        #                 and check_finish_achievable(numpy.array(local_map, dtype=numpy.float),
-        #                                             numpy.array(self.start, dtype=numpy.int),
-        #                                             numpy.array(self.finish, dtype=numpy.int)):
-        #             break
+        rand = random.Random()
+        if self.cur_task is not None:
+            local_map = self.cur_task.local_map  #choose start and finish point
+            while True:
+                self.start = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
+                              rand.randint(0, self.cur_task.local_map.shape[1] - 1))
+                self.finish = (rand.randint(0, self.cur_task.local_map.shape[0] - 1),
+                               rand.randint(0, self.cur_task.local_map.shape[1] - 1))
+                if local_map[self.start] == 0 \
+                        and local_map[self.finish] == 0 \
+                        and self.start != self.finish \
+                        and check_finish_achievable(numpy.array(local_map, dtype=numpy.float),
+                                                    numpy.array(self.start, dtype=numpy.int),
+                                                    numpy.array(self.finish, dtype=numpy.int)):
+                    break
         if (self.VISUALIZE):
             self.map_squares = [[0] * self.cur_task.local_map.shape[1] for _ in range(self.cur_task.local_map.shape[0])]
             self.map_window.clear(sf_graph.Color.WHITE)
@@ -165,13 +168,7 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
             if invalid_step:
                 reward = -self.obstacle_punishment
             else:
-                local_target = self.finish
-                cur_target_dist = euclidean(new_position, local_target)
-                if cur_target_dist < 1:
-                    reward = self.local_goal_reward
-                    done = True
-                else:
-                    reward = self._get_usual_reward(self.cur_position_discrete, new_position)
+                reward = self._get_usual_reward(self.cur_position_discrete, new_position)
                 self.cur_position_discrete = self.cur_position_discrete + BY_PIXEL_ACTION_DIFFS[action]
 
         if (self.VISUALIZE):
@@ -212,7 +209,8 @@ class PathFindingByPixelWithDistanceMapEnv(gym.Env):
         abs_gain = numpy.exp(-new_height / start_height)
 
         total_gain = sum(
-            ((1 - self.greedy_distance_reward_weight - self.absolute_distance_reward_weight) * true_gain,
-             self.greedy_distance_reward_weight * greedy_gain,
-             self.absolute_distance_reward_weight * abs_gain))
+            #((1 - self.greedy_distance_reward_weight - self.absolute_distance_reward_weight) * true_gain,
+             (self.greedy_distance_reward_weight * greedy_gain,
+             self.absolute_distance_reward_weight * abs_gain,
+            -self.step_punishment))
         return total_gain
