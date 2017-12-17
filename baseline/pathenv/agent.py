@@ -10,9 +10,9 @@ MemoryRecord = collections.namedtuple('MemoryRecord',
 
 
 GAMMA = 0.7
-ALPHA = 0.2
+ALPHA = 0.4
 
-RANDOM_ACTION_CHANCE = 0.1
+RANDOM_ACTION_CHANCE = 0.
 MANUAL_CONTROL = False
 
 class BaseAgent(object):
@@ -63,6 +63,35 @@ class BaseAgent(object):
                     action = numpy.argmax(self.qTable[observation_code])
         return action
 
+    def get_goal_direction(self, observation):
+        goal_direction = numpy.where(observation == -1)
+        if goal_direction[0].size != 0:
+            goal_direction = (goal_direction[0][0], goal_direction[1][0])
+            return goal_direction
+        else:
+            return None
+
+    def truncated_observation(self, observation):
+        goal = self.get_goal_direction(observation)
+        if (goal is not None):
+            y_start = 0
+            y_end = 11
+            x_start = 0
+            x_end = 11
+            if goal[0] == 0:
+                y_end = 6
+            elif goal[0] == 10:
+                y_start = 5
+            elif goal[1] == 0:
+                x_end = 6
+            else:
+                x_start = 5
+            #print "test"
+            #print(observation)
+            #print observation[y_start:y_end:1, x_start:x_end:1]
+            return observation[y_start:y_end, x_start:x_end]
+        else:
+            return observation
 
     def act(self, observation):
         if (MANUAL_CONTROL):
@@ -83,9 +112,10 @@ class BaseAgent(object):
                 action = 6
             elif a == 'q':
                 action = 7
-        # action = numpy.random.choice(self.number_of_actions)
-        action = self.get_best_action(observation)
-        # print(observation)
+        else:
+            # action = numpy.random.choice(self.number_of_actions)
+            action = self.get_best_action(observation)
+            # print(observation)
         return action
 
     def train_on_memory(self):
@@ -111,7 +141,9 @@ class BaseAgent(object):
         self.qTable[observation_code][self.prev_result.action] += GAMMA * max(self.qTable[next_observation_code]) + self.prev_result.reward
 
     def update_memory(self, observation, action, reward, next_observation, done):
-        self.memory.append(MemoryRecord(observation, action, reward, next_observation, done))
+        trunc_obs = self.truncated_observation(observation[0])
+        trunc_next_obs = self.truncated_observation(next_observation[0])
+        self.memory.append(MemoryRecord(trunc_obs, action, reward, trunc_next_obs, done))
         #self.memory[-1].append(MemoryRecord(observation, action, reward, next_observation, done))
         #self.prev_result = MemoryRecord(observation, action, reward, next_observation, done)
         #self.recalc_table()
