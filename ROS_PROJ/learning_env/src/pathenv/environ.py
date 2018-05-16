@@ -211,7 +211,7 @@ class TurtleBotObstEnv(gym.Env):
         return phi
 
     def _reset(self):
-        self.cur_task_num = (self.cur_task_num + 1) % self.task_count
+        self.cur_task_num = ((self.cur_task_num + 1) % self.task_count) + 1
         while True:
             if self.cur_gazebo_proc is not None:
                 self.cur_gazebo_proc.kill()
