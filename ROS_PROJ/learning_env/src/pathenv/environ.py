@@ -108,7 +108,7 @@ class TurtleBotObstEnv(gym.Env):
                     idle_punish=2,
                     map_dir="/home/kolya/Documents/maps/train/",
                     goal_thresh=0.5,
-                    task_count=12,
+                    task_count=11,
                     idle_thresh=0.01,
                     visualize=True,
                     def_lid_val=0,
@@ -149,7 +149,7 @@ class TurtleBotObstEnv(gym.Env):
                 break
             except:
                 counter += 1
-                if counter >= 10:
+                if counter >= 2:
                     raise
                 print("waiting for pos readings")
         idx = data.name.index("mobile_base")
@@ -179,7 +179,7 @@ class TurtleBotObstEnv(gym.Env):
                 break
             except:
                 counter += 1
-                if counter >= 10:
+                if counter >= 2:
                     raise
                 print("waiting for scan readings")
         self.lidar = list(data.ranges)
@@ -211,7 +211,7 @@ class TurtleBotObstEnv(gym.Env):
         return phi
 
     def _reset(self):
-        self.cur_task_num = ((self.cur_task_num + 1) % self.task_count) + 1
+        self.cur_task_num = (self.cur_task_num % self.task_count) + 1
         while True:
             if self.cur_gazebo_proc is not None:
                 self.cur_gazebo_proc.kill()
@@ -264,7 +264,7 @@ class TurtleBotObstEnv(gym.Env):
         idx = max(0, idx)
         idx = min(len(self.lidar) - 1, idx)
         #print(phi, idx)
-        self.lidar[idx] = -10
+        self.lidar[idx] = -1 * self.point_dist(self.goal, self.positiion)
         return self.lidar
 
     def write_speed(self, action):
@@ -277,22 +277,25 @@ class TurtleBotObstEnv(gym.Env):
 
     def _step(self, action):
         if (action == 0):
-            action = (0.3, 0)
+            action = (0.5, 0)
         elif (action == 1):
-            action = (0, -0.2)
+            action = (0, -0.3)
         elif (action == 2):
-            action = (0, 0.2)
+            action = (0, 0.3)
         elif (action == 3):
-            action = (-0.15, 0)
+            action = (-0.25, 0)
 
-        rospy.wait_for_service('/gazebo/unpause_physics')
-        self.unpause()
+        try:
+            rospy.wait_for_service('/gazebo/unpause_physics')
+            self.unpause()
 
-        self.write_speed(action)
-        self.update_lidar()
-        self.update_position()
-        rospy.wait_for_service('/gazebo/pause_physics')
-        self.pause()
+            self.write_speed(action)
+            self.update_lidar()
+            self.update_position()
+            rospy.wait_for_service('/gazebo/pause_physics')
+            self.pause()
+        except:
+            return self._get_state(), 0, True, self.extra_info
 
         cur_pos = self.position
         dist_to_goal = self.point_dist(cur_pos, self.goal)
