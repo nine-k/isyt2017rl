@@ -130,7 +130,8 @@ class TurtleBotObstEnv(gym.Env):
         self.task_count = task_count
         self.map_dir = map_dir
         self.goal = (1, 1)
-        self.ros_launch_path = "/opt/ros/kinetic/bin/roslaunch"
+        #self.ros_launch_path = "/opt/ros/kinetic/bin/roslaunch"
+        self.ros_launch_path = "roslaunch"
         self.visualize = visualize
         self.default_lidar_val = def_lid_val
         rospy.init_node('LEARN', anonymous=False)
