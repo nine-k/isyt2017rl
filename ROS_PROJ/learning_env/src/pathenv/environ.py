@@ -88,10 +88,17 @@ class TurtleBotObstEnv(gym.Env):
         tmp = os.popen("ps -Af").read()
         gzclient_count = tmp.count('gzclient')
         gzserver_count = tmp.count('gzserver')
+        rbsp = tmp.count('robot_state_publisher')
+        ndlt = tmp.count('nodelet')
         if gzclient_count > 0:
             os.system("killall -9 gzclient")
         if gzserver_count > 0:
             os.system("killall -9 gzserver")
+        if rbsp > 0:
+            os.system("killall -9 robot_state_publisher")
+        if ndlt > 0:
+            os.system("killall -9 nodelet")
+
         sleep(3.5)
         #tmp = os.popen("ps -Af").read()
         #gzclient_count = tmp.count('gzclient')
@@ -103,7 +110,7 @@ class TurtleBotObstEnv(gym.Env):
         #        pass
 
     def _configure(self,
-                    goal_reward=10,
+                    goal_reward=20,
                     obs_punish=5,
                     idle_punish=2,
                     map_dir="/home/kolya/Documents/maps/train/",
@@ -145,13 +152,13 @@ class TurtleBotObstEnv(gym.Env):
         counter = 0
         while True:
             try:
-                data = rospy.wait_for_message("/gazebo/model_states", ModelStates, timeout=10)
+                data = rospy.wait_for_message("/gazebo/model_states", ModelStates, timeout=5)
                 break
             except:
                 counter += 1
                 if counter >= 2:
                     raise
-                print("waiting for pos readings")
+                #print("waiting for pos readings")
         idx = data.name.index("mobile_base")
         data = data.pose[idx]
         self.cur_angle = euler_from_quaternion(self.quat_to_tuple(data.orientation))[2]
@@ -175,13 +182,13 @@ class TurtleBotObstEnv(gym.Env):
         counter = 0
         while True:
             try:
-                data = rospy.wait_for_message('/scan', LaserScan, timeout=10)
+                data = rospy.wait_for_message('/scan', LaserScan, timeout=5)
                 break
             except:
                 counter += 1
                 if counter >= 2:
                     raise
-                print("waiting for scan readings")
+                #print("waiting for scan readings")
         self.lidar = list(data.ranges)
         for i in range(len(self.lidar)):
             if math.isnan(self.lidar[i]):
@@ -223,7 +230,7 @@ class TurtleBotObstEnv(gym.Env):
             gui = "gui:=false"
             if self.visualize:
                 gui = "gui:=true"
-            print(self.ros_launch_path + " turtlebot_gazebo turtlebot_world.launch world_file:=" + map_dir + ' ' + gui)
+            #print(self.ros_launch_path + " turtlebot_gazebo turtlebot_world.launch world_file:=" + map_dir + ' ' + gui)
             self.cur_gazebo_proc = subprocess.Popen([self.ros_launch_path, "turtlebot_gazebo", "turtlebot_world.launch", "world_file:=" + map_dir, gui], shell=False)
             self.cur_map_it = 0
             try:
@@ -264,7 +271,7 @@ class TurtleBotObstEnv(gym.Env):
         idx = max(0, idx)
         idx = min(len(self.lidar) - 1, idx)
         #print(phi, idx)
-        self.lidar[idx] = -1 * self.point_dist(self.goal, self.positiion)
+        self.lidar[idx] = -1 * self.point_dist(self.goal, self.position)
         return self.lidar
 
     def write_speed(self, action):
@@ -299,16 +306,19 @@ class TurtleBotObstEnv(gym.Env):
 
         cur_pos = self.position
         dist_to_goal = self.point_dist(cur_pos, self.goal)
+        dist_gain = (self.point_dist(self.goal, self.prev_pos) - dist_to_goal) * 0.0001
         #dist_to_goal = ((cur_pos[0] - self.goal[0])**2 + (cur_pos[1] - self.goal[1])**2)**0.5
         done = dist_to_goal < self.goal_thresh
-        reward = 0
+        reward = dist_gain
         if (done):
             reward = self.goal_reward
         elif self.check_collision():
-            reward = -self.obst_punish
+            reward += -self.obst_punish
             self.extra_info.collisions += 1
         elif self.point_dist(cur_pos, self.prev_pos) < self.idle_thresh and abs(action[1]) < 0.1:
-            reward = -self.idle_punish
+            reward += -self.idle_punish
+        else:
+            reward += -1
         obs = self._get_state()
         #print(self.position, self.goal)
         #print("dist:", dist_to_goal)
