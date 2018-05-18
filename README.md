@@ -17,5 +17,6 @@
 Как запускать:
 1) Скачать или склонировать репозиторий
 2) Запустить roscore
-3) В ROS_PROJ/learning_env/src открыть learning.ipynb (для запуска с GUI gazebo во второй ячейке в вызове configure поставить visualize=True)
+3) В ROS_PROJ/learning_env/src открыть learning.ipynb 
+4) в параметр map_dir указать путь к папке maps(для запуска с GUI gazebo во второй ячейке в вызове configure поставить visualize=True)
 4) Последовательно запустить все ячейки
